@@ -22,7 +22,7 @@
                     result = result * (X - xa(k - 1)) + d(k);
                 end
                 result = simplify(result);
-                app.HienthiTextArea.Value = sprintf('Đa thức nội suy Newton:\n%s', char(result)); disp(result);
+                app.HienthiTextArea.Value = sprintf('Đa thức nội suy Newton:\n%s', char(result)); 
 
             elseif strcmp(app.ChonphuongphapDropDown.Value, 'Lagrange')
                 n = length(xa);
@@ -37,6 +37,6 @@
                     sum = sum + simplify(product);
                 end
                 result = simplify(sum);
-                app.HienthiTextArea.Value = sprintf('Đa thức nội suy Lagrange:\n%s', char(result)); disp(result);
+                app.HienthiTextArea.Value = sprintf('Đa thức nội suy Lagrange:\n%s', char(result));
             end                        
         end
