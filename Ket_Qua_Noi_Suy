@@ -1,0 +1,47 @@
+        function KetquanoisuyButtonPushed(app, event)
+            xa = str2num(app.NhapgiatrixEditField.Value);
+            ya = str2num(app.NhapgiatriyEditField.Value);
+            
+            if length(xa) ~= length(ya)
+                app.HienthiTextArea.Value = sprintf('Vui lòng nhập các giá trị x và y có cùng kích thước!!');
+                return;
+            end
+
+            if isempty(app.NhapgaitricannoisuyEditField.Value)
+                app.HienthiTextArea.Value = sprintf('Vui long nhap gia tri xo để thực hiện nội suy!!');
+                return;
+            else
+                xo = str2double(app.NhapgaitricannoisuyEditField.Value);
+            end
+
+            if strcmp(app.ChonphuongphapDropDown.Value, 'Newton')
+                n = length(xa);
+                d = ya;
+                for i = 2 : n
+                    for j = n : -1 : i
+                        d(j) = (d(j) - d(j-1)) / (xa(j) - xa(j-i+1));
+                    end
+                end
+                
+                % Xây dựng đa thức Newton
+                result = d(n);
+                for k = n-1 : -1 : 1
+                    result = result * (xo - xa(k)) + d(k);
+                end
+
+            elseif strcmp(app.ChonphuongphapDropDown.Value, 'Lagrange')
+                n = length(xa);
+                sum = 0;
+                for i = 1 : n
+                    product = ya(i);
+                    for j = 1 : n
+                        if j ~= i
+                            product = product * ((xo - xa(j)) / (xa(i) - xa(j)));
+                        end
+                    end
+                    sum = sum + product;
+                end
+                result = sum;
+            end
+            app.HienthiTextArea.Value = sprintf('Giá trị nội suy tại x = %.2f: %.4f', xo, result);
+        end
