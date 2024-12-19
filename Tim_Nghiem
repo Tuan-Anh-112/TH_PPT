@@ -1,0 +1,61 @@
+      function ChnphngphpgiiDropDownValueChanged(app, event)
+            switch app.ChnphngphpgiiDropDown.Value
+                case 'Chia đôi'
+                    app.b.Visible = 'on';
+                    app.gx.Visible ='off';
+                    app.ptgx.Visible = 'off';
+                    app.fab.Text = 'Nhập khoảng nghiệm phân ly [a b]: ';
+                case 'Lặp'
+                    app.fab.Text = 'Nhập giá trị khởi tạo: ';
+                    app.b.Visible = 'off';
+                    app.gx.Text = 'Nhập hàm lặp g(x): ';
+                    app.gx.Visible ='on';
+                    app.ptgx.Visible ='on';
+                case 'Newton'
+                    app.fab.Text = 'Nhập giá trị khởi tạo: ';
+                    app.b.Visible = 'off';
+                    app.gx.Text = 'Đạo hàm của f(x): ';
+                    app.gx.Visible ='on';
+                    app.ptgx.Visible ='on';   
+            end
+        end
+
+        function GiiButtonPushed(app, event)
+            select =0;
+            switch app.ChnphngphpgiiDropDown.Value
+                case 'Chia đôi'
+                    select =1;
+                case 'Lặp'
+                    select =2;
+                case 'Newton'
+                    select =3;
+            end
+            fx = str2func(['@(x)' app.pt.Value]);
+            saiso = app.ss.Value;
+            if select ==1
+                a = app.a.Value;
+                b= app.b.Value;            
+                [result, n] = chia_doi(fx, a, b, saiso);
+                
+            elseif select ==2
+                x0 = app.a.Value;
+                g =str2func(['@(x)' app.ptgx.Value]);
+                [result, n] = lap(fx, g, x0, saiso);
+            elseif select ==3
+                x0 = app.a.Value;
+                daoham = str2func(['@(x)' app.ptgx.Value]);
+                [result, n] = newton(fx, daoham, x0, saiso);
+            end
+            app.kq.Value = result;
+            app.lap.Value= n;
+            fplot(app.UIAxes,fx, 'DisplayName', 'f(x)');
+            hold(app.UIAxes, 'on');
+            plot(app.UIAxes,result, fx(result), 'ro', 'DisplayName', 'Nghiệm gần đúng');
+            xlabel(app.UIAxes,'x');
+            ylabel(app.UIAxes,'f(x)');
+            title(app.UIAxes,'Đồ thị của phương trình f(x)');
+            legend(app.UIAxes,'show');
+            grid(app.UIAxes, 'on');
+            hold(app.UIAxes, 'off');
+            %close(1);
+        end
