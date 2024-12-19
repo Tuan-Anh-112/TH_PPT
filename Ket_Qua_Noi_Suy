@@ -23,10 +23,20 @@
                     end
                 end
                 
-                % Xây dựng đa thức Newton
-                result = d(n);
-                for k = n-1 : -1 : 1
-                    result = result * (xo - xa(k)) + d(k);
+                if abs(xo - xa(1)) <= abs(xo - xa(end))
+                    %Newton tiến
+                    result = d(1);
+                    for k = 2 : n
+                        result = result * (xo - xa(k - 1)) + d(k);
+                    end
+                    app.HienthiTextArea.Value = sprintf('Giá trị nội suy tại x = %.2f theo phương pháp Newton tiến là: %.4f', xo, result);
+                else
+                    %Newton lùi
+                    result = d(n);
+                    for k = n-1 : -1 : 1
+                        result = result * (xo - xa(k)) + d(k);
+                    end
+                    app.HienthiTextArea.Value = sprintf('Giá trị nội suy tại x = %.2f theo phương pháp Newton lùi là: %.4f', xo, result);
                 end
 
             elseif strcmp(app.ChonphuongphapDropDown.Value, 'Lagrange')
@@ -41,7 +51,6 @@
                     end
                     sum = sum + product;
                 end
-                result = sum;
+                app.HienthiTextArea.Value = sprintf('Giá trị nội suy tại x = %.2f theo phương pháp Lagrange là: %.4f', xo, sum);
             end
-            app.HienthiTextArea.Value = sprintf('Giá trị nội suy tại x = %.2f: %.4f', xo, result);
         end
