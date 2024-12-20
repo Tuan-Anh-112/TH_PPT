@@ -1,0 +1,301 @@
+classdef tiemnghiem < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                      matlab.ui.Figure
+        TabGroup                      matlab.ui.container.TabGroup
+        NghimTab                      matlab.ui.container.Tab
+        gx_2                          matlab.ui.control.Label
+        fab                           matlab.ui.control.Label
+        SolveButton                   matlab.ui.control.Button
+        lap                           matlab.ui.control.NumericEditField
+        NumberofiterationsLabel       matlab.ui.control.Label
+        kq                            matlab.ui.control.NumericEditField
+        ResultLabel                   matlab.ui.control.Label
+        ChoosesolutionmethodDropDown  matlab.ui.control.DropDown
+        ChoosesolutionmethodDropDownLabel  matlab.ui.control.Label
+        ss                            matlab.ui.control.NumericEditField
+        b                             matlab.ui.control.NumericEditField
+        a                             matlab.ui.control.NumericEditField
+        EntertheallowederrorLabel     matlab.ui.control.Label
+        pt                            matlab.ui.control.EditField
+        NhpphngtrnhLabel              matlab.ui.control.Label
+        UIAxes                        matlab.ui.control.UIAxes
+    end
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Value changed function: ChoosesolutionmethodDropDown
+        function ChoosesolutionmethodDropDownValueChanged(app, event)
+            switch app.ChoosesolutionmethodDropDown.Value
+                case 'Chia đôi'
+                    app.b.Visible = 'on';
+                    app.fab.Text = 'Enter [a b]: ';
+                case 'Newton'
+                    app.b.Visible = 'on';
+                    app.fab.Text = 'Enter [a b]: ';
+                case 'Lặp'
+                    app.b.Visible = 'on';
+                    app.fab.Text = 'Enter [a b]: ';
+            end
+        end
+
+        % Button pushed function: SolveButton
+        function SolveButtonPushed(app, event)
+% Lấy giá trị đầu vào
+method = app.ChoosesolutionmethodDropDown.Value;
+fx = str2func(['@(x)' app.pt.Value]);
+saiso = app.ss.Value;
+a = app.a.Value;
+b = app.b.Value;
+
+% Khởi tạo kết quả
+result = 0;
+n = 0;
+switch method
+    case 'Chia đôi'
+        % Gọi hàm chia đôi
+        [result, n] = chia_doi(fx, a, b, saiso);
+    case 'Newton'
+    % Tính Newton với đạo hàm
+    daoham = @(x) (fx(x + 1e-6) - fx(x)) / 1e-6; % Sử dụng đạo hàm gần đúng
+    x0 = (a + b) / 2; % Khởi tạo giá trị ban đầu là trung điểm [a, b]
+    [result, n] = newton(fx, daoham, x0, saiso);
+    case 'Lặp'
+        % Phương pháp lặp
+        g = @(x) (a + b) / 2 - fx((a + b) / 2); % Sử dụng khoảng để tính g(x)
+        x0 = (a + b) / 2;
+        [result, n] = lap(fx, g, x0, saiso);
+end
+
+% Hiển thị kết quả
+app.kq.Value = result;
+app.lap.Value = n;
+
+% Vẽ đồ thị
+fplot(app.UIAxes, fx, [a, b], 'DisplayName', 'f(x)');
+hold(app.UIAxes, 'on');
+plot(app.UIAxes, result, fx(result), 'ro', 'DisplayName', 'Nghiệm gần đúng');
+xlabel(app.UIAxes, 'x');
+ylabel(app.UIAxes, 'f(x)');
+title(app.UIAxes, 'Đồ thị của phương trình f(x)');
+legend(app.UIAxes, 'show');
+grid(app.UIAxes, 'on');
+hold(app.UIAxes, 'off');
+
+% Hàm chia đôi
+function [result, n] = chia_doi(fx, a, b, saiso)
+    n = 0;
+    while (b - a) / 2 > saiso
+        c = (a + b) / 2;
+        if fx(c) == 0
+            break;
+        elseif fx(a) * fx(c) < 0
+            b = c;
+        else
+            a = c;
+        end
+        n = n + 1;
+    end
+    result = (a + b) / 2;
+end
+
+% Hàm Newton
+function [result, n] = newton(fx, dfx, x0, saiso)
+    n = 0;
+    while true
+        x1 = x0 - fx(x0) / dfx(x0);
+        n = n + 1;
+        if abs(x1 - x0) < saiso
+            break;
+        end
+        x0 = x1;
+    end
+    result = x1;
+end
+% Hàm lặp
+function [result, n] = lap(fx, g, x0, saiso)
+    n = 0;
+    while true
+        x1 = g(x0);
+        n = n + 1;
+        if abs(x1 - x0) < saiso
+            break;
+        end
+        x0 = x1;
+    end
+    result = x1;
+end
+
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Position = [100 100 954 606];
+            app.UIFigure.Name = 'MATLAB App';
+
+            % Create TabGroup
+            app.TabGroup = uitabgroup(app.UIFigure);
+            app.TabGroup.Position = [1 1 1038 606];
+
+            % Create NghimTab
+            app.NghimTab = uitab(app.TabGroup);
+            app.NghimTab.Title = 'Nghiệm';
+
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.NghimTab);
+            title(app.UIAxes, 'Title')
+            xlabel(app.UIAxes, 'X')
+            ylabel(app.UIAxes, 'Y')
+            zlabel(app.UIAxes, 'Z')
+            app.UIAxes.XGrid = 'on';
+            app.UIAxes.YGrid = 'on';
+            app.UIAxes.ZGrid = 'on';
+            app.UIAxes.Position = [496 89 479 405];
+
+            % Create NhpphngtrnhLabel
+            app.NhpphngtrnhLabel = uilabel(app.NghimTab);
+            app.NhpphngtrnhLabel.HorizontalAlignment = 'right';
+            app.NhpphngtrnhLabel.FontSize = 15;
+            app.NhpphngtrnhLabel.FontWeight = 'bold';
+            app.NhpphngtrnhLabel.Position = [62 397 80 22];
+            app.NhpphngtrnhLabel.Text = 'Enter f(x): ';
+
+            % Create pt
+            app.pt = uieditfield(app.NghimTab, 'text');
+            app.pt.FontWeight = 'bold';
+            app.pt.Position = [186 397 200 22];
+
+            % Create EntertheallowederrorLabel
+            app.EntertheallowederrorLabel = uilabel(app.NghimTab);
+            app.EntertheallowederrorLabel.HorizontalAlignment = 'right';
+            app.EntertheallowederrorLabel.FontSize = 15;
+            app.EntertheallowederrorLabel.FontWeight = 'bold';
+            app.EntertheallowederrorLabel.Position = [62 251 174 22];
+            app.EntertheallowederrorLabel.Text = 'Enter the allowed error:';
+
+            % Create a
+            app.a = uieditfield(app.NghimTab, 'numeric');
+            app.a.HorizontalAlignment = 'center';
+            app.a.FontWeight = 'bold';
+            app.a.Position = [266 341 84 22];
+
+            % Create b
+            app.b = uieditfield(app.NghimTab, 'numeric');
+            app.b.HorizontalAlignment = 'center';
+            app.b.FontWeight = 'bold';
+            app.b.Position = [267 303 84 22];
+
+            % Create ss
+            app.ss = uieditfield(app.NghimTab, 'numeric');
+            app.ss.HorizontalAlignment = 'center';
+            app.ss.FontWeight = 'bold';
+            app.ss.Position = [265 251 84 22];
+
+            % Create ChoosesolutionmethodDropDownLabel
+            app.ChoosesolutionmethodDropDownLabel = uilabel(app.NghimTab);
+            app.ChoosesolutionmethodDropDownLabel.HorizontalAlignment = 'right';
+            app.ChoosesolutionmethodDropDownLabel.FontSize = 15;
+            app.ChoosesolutionmethodDropDownLabel.FontWeight = 'bold';
+            app.ChoosesolutionmethodDropDownLabel.Position = [62 446 181 22];
+            app.ChoosesolutionmethodDropDownLabel.Text = 'Choose solution method';
+
+            % Create ChoosesolutionmethodDropDown
+            app.ChoosesolutionmethodDropDown = uidropdown(app.NghimTab);
+            app.ChoosesolutionmethodDropDown.Items = {'...', 'Chia đôi', 'Lặp', 'Newton'};
+            app.ChoosesolutionmethodDropDown.ValueChangedFcn = createCallbackFcn(app, @ChoosesolutionmethodDropDownValueChanged, true);
+            app.ChoosesolutionmethodDropDown.FontSize = 13;
+            app.ChoosesolutionmethodDropDown.FontWeight = 'bold';
+            app.ChoosesolutionmethodDropDown.Position = [258 446 100 22];
+            app.ChoosesolutionmethodDropDown.Value = 'Chia đôi';
+
+            % Create ResultLabel
+            app.ResultLabel = uilabel(app.NghimTab);
+            app.ResultLabel.HorizontalAlignment = 'right';
+            app.ResultLabel.FontSize = 15;
+            app.ResultLabel.FontWeight = 'bold';
+            app.ResultLabel.Position = [62 131 51 22];
+            app.ResultLabel.Text = 'Result';
+
+            % Create kq
+            app.kq = uieditfield(app.NghimTab, 'numeric');
+            app.kq.HorizontalAlignment = 'center';
+            app.kq.FontSize = 15;
+            app.kq.FontWeight = 'bold';
+            app.kq.Position = [137 110 157 43];
+
+            % Create NumberofiterationsLabel
+            app.NumberofiterationsLabel = uilabel(app.NghimTab);
+            app.NumberofiterationsLabel.HorizontalAlignment = 'right';
+            app.NumberofiterationsLabel.FontSize = 15;
+            app.NumberofiterationsLabel.FontWeight = 'bold';
+            app.NumberofiterationsLabel.Position = [60 55 152 22];
+            app.NumberofiterationsLabel.Text = 'Number of iterations';
+
+            % Create lap
+            app.lap = uieditfield(app.NghimTab, 'numeric');
+            app.lap.HorizontalAlignment = 'center';
+            app.lap.FontSize = 15;
+            app.lap.FontWeight = 'bold';
+            app.lap.Position = [236 34 101 43];
+
+            % Create SolveButton
+            app.SolveButton = uibutton(app.NghimTab, 'push');
+            app.SolveButton.ButtonPushedFcn = createCallbackFcn(app, @SolveButtonPushed, true);
+            app.SolveButton.FontSize = 17;
+            app.SolveButton.FontWeight = 'bold';
+            app.SolveButton.Position = [52 178 100 29];
+            app.SolveButton.Text = 'Solve';
+
+            % Create fab
+            app.fab = uilabel(app.NghimTab);
+            app.fab.FontSize = 15;
+            app.fab.FontWeight = 'bold';
+            app.fab.Position = [66 341 263 22];
+            app.fab.Text = 'Enter [a b]: ';
+
+            % Create gx_2
+            app.gx_2 = uilabel(app.NghimTab);
+            app.gx_2.FontSize = 15;
+            app.gx_2.FontWeight = 'bold';
+            app.gx_2.Position = [199 506 281 22];
+            app.gx_2.Text = 'Solve the equation to find the solution';
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = tiemnghiem
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
