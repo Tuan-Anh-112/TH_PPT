@@ -1,0 +1,111 @@
+        function SolveButton_2Pushed(app, event)
+method = app.ChoosesolutionmethodDropDown.Value;
+
+% Chuyển biểu thức chuỗi thành biểu thức symbolic mà không sử dụng syms x toàn cục
+fx_sym = str2sym(app.pt.Value); % Biểu thức symbolic f(x)
+fx = matlabFunction(fx_sym, 'Vars', sym('x')); % Chuyển thành hàm MATLAB
+
+saiso = app.saisochophep.Value;
+a = app.a0.Value;
+b = app.b0.Value;
+
+% Khởi tạo kết quả
+result = 0;
+n = 0;
+
+switch method
+    case 'Chia đôi'
+        [result, n] = chia_doi(fx, a, b, saiso);
+        app.Printf.Value = sprintf('Nghiệm của f(x) theo PP Chia đôi là: x = %.2f, số lần lập: %d', result, n);
+    
+    case 'Newton'
+        dfx = matlabFunction(diff(fx_sym, sym('x')), 'Vars', sym('x')); % Tính đạo hàm
+        ddfx = matlabFunction(diff(dfx(sym('x')), sym('x')), 'Vars', sym('x')); % Tính đạo hàm bậc 2
+        
+        if dfx(a) * dfx(b) < 0 || ddfx(a) * ddfx(b) < 0
+            app.Printf.Value = sprintf('Không thỏa mãn điều kiện đầu vào!!');
+            return;
+        end
+        
+        if fx(a) * ddfx(a) > 0
+            x0 = a;
+        else
+            x0 = b;
+        end
+        
+        [result, n] = newton(fx, dfx, x0, saiso);
+        app.Printf.Value = sprintf('Nghiệm của f(x) theo PP Newton là: x = %.2f, số lần lập: %d', result, n);
+    
+    case 'Lặp'
+        gx_sym = str2sym(app.ptgx.Value); % Biểu thức symbolic cho g(x)
+        gx = matlabFunction(gx_sym, 'Vars', sym('x')); % Chuyển thành hàm MATLAB
+        dgx = matlabFunction(diff(gx_sym, sym('x')), 'Vars', sym('x')); % Tính đạo hàm của g(x)
+
+        x0 = a;
+        if abs(dgx(x0)) > 1
+            app.Printf.Value = sprintf('Không thỏa mãn điều kiện đầu vào!!');
+            return;
+        end
+        
+        [result, n] = pplap(gx, x0, saiso);
+        app.Printf.Value = sprintf('Nghiệm của f(x) theo PP Lặp là: x = %.2f, số lần lập: %d', result, n);
+end
+
+% Vẽ đồ thị
+fplot(app.UIAxes, fx, [a, b], 'DisplayName', 'f(x)');
+hold(app.UIAxes, 'on');
+plot(app.UIAxes, result, fx(result), 'ro', 'DisplayName', 'Nghiệm gần đúng');
+xlabel(app.UIAxes, 'x');
+ylabel(app.UIAxes, 'f(x)');
+title(app.UIAxes, 'Đồ thị của phương trình f(x)');
+legend(app.UIAxes, 'show');
+grid(app.UIAxes, 'on');
+hold(app.UIAxes, 'off');
+
+
+            
+            % Hàm chia đôi
+            function [result, n] = chia_doi(fx, a, b, saiso)
+                n = 0;
+                while abs(b-a) > saiso
+                    c = (a + b) / 2;
+                    if fx(c) == 0
+                        break;
+                    elseif fx(a) * fx(c) < 0
+                        b = c;
+                    else
+                        a = c;
+                    end
+                    n = n + 1;
+                end
+                result = c;
+            end
+            
+            % Hàm Newton
+            function [result, n] = newton(fx, dfx, x0, saiso)
+                n = 0;
+                while true
+                    x1 = x0 - fx(x0) / dfx(x0);
+                    n = n + 1;
+                    if abs(x1 - x0) < saiso
+                        break;
+                    end
+                    x0 = x1;
+                end
+                result = x0;
+            end
+            
+            % Hàm lặp
+            function [result, n] = pplap(gx, x0, saiso)
+                n = 0;
+                while true
+                    x1 = gx(x0);
+                    n = n + 1;
+                    if abs(x1 - x0) < saiso
+                        break;
+                    end
+                    x0 = x1;
+                end
+                result = x1;
+            end            
+        end
