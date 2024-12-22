@@ -1,0 +1,12 @@
+        function ChoosemethodDropDownValueChanged(app, event)
+            value = app.ChoosemethodDropDown.Value;
+            switch value
+                case 'Xấp xỉ tiến'
+                    app.selectedMethod = 'forward';
+                case 'Xấp xỉ lùi'
+                    app.selectedMethod = 'backward';
+                case 'Xấp xỉ trung tâm'
+                    app.selectedMethod = 'central';
+            end
+        end
+    end
