@@ -1,0 +1,9 @@
+        function ChoosethewrongnumberDropDownValueChanged(app, event)
+           value = app.ChoosethewrongnumberDropDown.Value; 
+            switch value 
+                case 'O(h)'
+                    app.selectedErrorOrder = 'O(h)';
+                case 'O(h^2)'
+                    app.selectedErrorOrder = 'O(h^2)';
+            end
+        end
