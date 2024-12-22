@@ -1,0 +1,19 @@
+        function ChoosesolutionmethodDropDownValueChanged(app, event)
+            switch app.ChoosesolutionmethodDropDown.Value
+                case 'Chia đôi'
+                    app.b0.Visible = 'on';
+                    app.fab.Text = 'Enter [a b]: ';
+                    app.ptgx.Visible = 'off'; 
+                    app.Labelgx.Visible = 'off';
+                case 'Newton'
+                    app.b0.Visible = 'on';
+                    app.fab.Text = 'Enter [a b]: ';                    
+                    app.ptgx.Visible = 'off'; 
+                    app.Labelgx.Visible = 'off';
+                case 'Lặp'
+                    app.b0.Visible = 'on';
+                    app.fab.Text = 'Enter [a b]: ';
+                    app.ptgx.Visible = 'on';   
+                    app.Labelgx.Visible = 'on';
+            end
+        end
