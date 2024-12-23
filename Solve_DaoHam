@@ -1,43 +1,54 @@
         function SolveButtonPushed(app, event)
-method = app.selectedMethod;
-h = app.dhh.Value;
-x = app.dhgiatri.Value;
+                method = app.selectedMethod;
+                h = app.dhh.Value;
+                x = app.dhgiatri.Value;
 
-% Kiểm tra nếu các giá trị nhập vào hợp lệ
-if isempty(method) || isempty(app.selectedErrorOrder)
-    app.PrintfTextArea.Value = sprintf('Chưa chọn phương pháp hoặc sai số.');
-    return;
-end
+            if isempty(app.dhh.Value)
+                  app.PrintfTextArea.Value = sprintf('Xin hãy nhập sai số!!');
+                  return;
+            end
 
-result = 0; % Khởi tạo biến result trước khi sử dụng
+            if isempty(app.dhgiatri.Value)
+                app.PrintfTextArea.Value = sprintf('Xin hãy nhập giá trị cần dự đoán!!');
+                return;
+            end
 
 % Kiểm tra xem có phải là phương pháp 'Hàm số' hay không
 if strcmp(app.SelectinputtypeDropDown.Value, 'Hàm số')
     try
         fx = str2func(['@(x)' app.dhfx.Value]); % Chuyển chuỗi thành hàm
-        app.PrintfTextArea.Value = sprintf('Hàm số đã được chuyển thành công.\n');
+        if isempty(fx)
+            app.Printf.Value = sprintf('Dữ liệu đầu vào không hợp lệ. Vui lòng kiểm tra lại.');
+            return;
+        end   
         
         switch method
             case 'forward'
                 switch app.selectedErrorOrder
                     case 'O(h)'
                         result = (fx(x + h) - fx(x)) / h;
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ tiến (O(h)) là: %.2f', result);
                     case 'O(h^2)'
                         result = (-fx(x + 2*h) + 4*fx(x + h) - 3*fx(x)) / (2*h);
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ tiến O(h^2) là: %.2f', result);
                 end
             case 'backward'
                 switch app.selectedErrorOrder
                     case 'O(h)'
                         result = (fx(x) - fx(x - h)) / h;
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ lùi (O(h)) là: %.2f', result);
                     case 'O(h^2)'
                         result = (3*fx(x) - 4*fx(x - h) + fx(x - 2*h)) / (2*h);
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ lùi (O(h^2)) là: %.2f', result);
                 end
             case 'central'
                 switch app.selectedErrorOrder
                     case 'O(h)'
                         result = (fx(x + h) - fx(x - h)) / (2*h);
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ trung tâm (O(h)) là: %.2f', result);
                     case 'O(h^2)'
                         result = (-fx(x + 2*h) + 8*fx(x + h) - 8*fx(x - h) + fx(x - 2*h)) / (12*h);
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ trung tâm O(h^2) là: %.2f', result);
                 end
         end
     catch ME
@@ -57,8 +68,13 @@ else
             return;
         end
 
+    if isempty(x_data) || isempty(y_data)
+        app.Printf.Value = sprintf('Dữ liệu đầu vào không hợp lệ. Vui lòng kiểm tra lại.');
+        return;
+    end   
+
         % Tìm chỉ số của điểm x_val trong mảng x_data
-        idx = find(x_data == x);
+        idx = find(x_data == x, 1);
         
         % Kiểm tra chỉ số có hợp lệ không (tránh ra ngoài biên của mảng)
         if isempty(idx) || idx == 1 || idx == length(x_data)
@@ -72,22 +88,40 @@ else
                 switch app.selectedErrorOrder
                     case 'O(h)' 
                         result = (y_data(idx + 1) - y_data(idx)) / h;
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ tiến O(h) là: %.2f', result);
                     case 'O(h^2)' 
+                            if idx + 2 > length(x_data)
+                                app.PrintfTextArea.Value = sprintf('Không đủ dữ liệu để tính O(h^2)!!');
+                                return;
+                            end   
                         result = (-y_data(idx + 2) + 4*y_data(idx + 1) - 3*y_data(idx)) / (2*h);
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ tiến O(h^2) là: %.2f', result);
                 end
             case 'backward'
                 switch app.selectedErrorOrder
                     case 'O(h)' 
                         result = (y_data(idx) - y_data(idx - 1)) / h;
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ lùi O(h) là: %.2f', result);
                     case 'O(h^2)' 
+                            if idx - 2 < 1
+                                app.PrintfTextArea.Value = sprintf('Không đủ dữ liệu để tính O(h^2)!!');
+                                return;
+                            end     
                         result = (3*y_data(idx) - 4*y_data(idx - 1) + y_data(idx - 2)) / (2*h);
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ lùi O(h^2) là: %.2f', result);
                 end
             case 'central'
                 switch app.selectedErrorOrder
                     case 'O(h)' 
                         result = (y_data(idx + 1) - y_data(idx - 1)) / (2 * h);
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ trung tâm O(h) là: %.2f', result);
                     case 'O(h^2)' 
+                            if idx + 2 > length(x_data) || idx - 2 < 1
+                                app.PrintfTextArea.Value = sprintf('Không đủ dữ liệu để tính O(h^2)!!');
+                                return;
+                            end  
                         result = (-y_data(idx + 2) + 8*y_data(idx + 1) - 8*y_data(idx - 1) + y_data(idx - 2)) / (12 * h);
+                        app.PrintfTextArea.Value = sprintf('Đạo hàm cấp 1 theo PP xấp xỉ trung tâm O(h^2) là: %.2f', result);
                 end
         end
     catch ME
@@ -95,9 +129,4 @@ else
         return;
     end
 end
-
-% Hiển thị kết quả
-app.PrintfTextArea.Value = sprintf('Kết quả: %.2f', result);
-app.dhketqua.Value = result;
-
         end
